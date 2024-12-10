@@ -208,3 +208,19 @@ if invoice_page:
         print(f"Employee {employee_name} not found!")
 else:
     print("No invoice with 'Payment Processing' status found!")
+
+# for Bobby
+bobby_employee_name = "Bobby"
+bobby_t_ca_db_id = "158404f6b69e81e984a9e2ddda3b69e1"  # Bobby's Invoice DB ID
+invoice_page = get_latest_invoice(bobby_t_ca_db_id)
+
+if invoice_page:
+    invoice_fields = extract_invoice_fields(invoice_page)
+    bobby_employee_id = get_employee_id(bobby_employee_name)
+    if bobby_employee_id:
+        employer_id = invoice_fields.get('Employer ID', "")
+        create_invoice(invoice_fields, bobby_employee_id, employer_id)
+    else:
+        print(f"Employee {bobby_employee_name} not found!")
+else:
+    print("No invoice with 'Payment Processing' status found for Bobby!")
