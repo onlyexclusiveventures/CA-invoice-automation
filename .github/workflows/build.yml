@@ -2,8 +2,11 @@ name: Run Notion Invoice Automation
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Run every 5 minutes
-  workflow_dispatch:       # Allows manual triggering of the workflow
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run-automation:
@@ -18,29 +21,21 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Restore processed_pages.json
-        uses: actions/cache@v3
-        with:
-          path: processed_pages.json
-          key: processed-pages-cache-${{ github.run_id }}
-
       - name: Install Dependencies
-        run: |
-          pip install -r invoice_automation/requirements.txt
+        run: pip install -r invoice_automation/requirements.txt
 
       - name: Run Invoice Automation Script
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
-        run: |
-          python invoice_automation/invoice_automation.py
+        run: python invoice_automation/invoice_automation.py
 
       - name: Debug Processed Pages
-        run: |
-          echo "Contents of processed_pages.json before saving:"
-          cat processed_pages.json
+        run: cat processed_pages.json
 
-      - name: Save processed_pages.json
-        uses: actions/cache@v3
-        with:
-          path: processed_pages.json
-          key: processed-pages-cache-${{ github.run_id }}
+      - name: Commit processed_pages.json
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add processed_pages.json
+          git commit -m "Update processed_pages.json after run" || echo "No changes to commit"
+          git push origin main
