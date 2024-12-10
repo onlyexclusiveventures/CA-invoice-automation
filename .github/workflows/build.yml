@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: processed_pages.json
-          key: processed-pages-cache-${{ github.run_id }}
+          key: processed-pages-cache
 
       - name: Install Dependencies
         run: |
