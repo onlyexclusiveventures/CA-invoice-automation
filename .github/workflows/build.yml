@@ -3,24 +3,29 @@ name: Run Notion Invoice Automation
 on:
   schedule:
     - cron: '*/5 * * * *'  # Run every 5 minutes
-  workflow_dispatch:       # Allows manual trigger
+  workflow_dispatch:       # Allows manual triggering of the workflow
 
 jobs:
-  run-script:
+  run-automation:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Specify your desired Python version
+          python-version: '3.x'
+
+      - name: Restore processed_pages.json
+        uses: actions/cache@v3
+        with:
+          path: processed_pages.json
+          key: processed-pages-cache
 
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r invoice_automation/requirements.txt
 
       - name: Run Invoice Automation Script
@@ -28,3 +33,9 @@ jobs:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
         run: |
           python invoice_automation/invoice_automation.py
+
+      - name: Save processed_pages.json
+        uses: actions/cache/save@v3
+        with:
+          path: processed_pages.json
+          key: processed-pages-cache
