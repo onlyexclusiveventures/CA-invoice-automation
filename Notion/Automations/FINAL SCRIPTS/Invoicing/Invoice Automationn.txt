@@ -1,0 +1,200 @@
+import requests
+import json
+
+# Notion API setup
+NOTION_API_KEY = "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"  # Your Notion API key
+
+# Database IDs
+T_CA_INVOICES_DATABASE_ID = "151404f6b69e81158d0de23c708168d4"  # T (CA) Invoices Database
+OEV_INVOICES_DATABASE_ID = "155404f6-b69e-80f7-a0a5-db58eda0c82a"  # OEV Invoices Database (corrected)
+EMPLOYEE_DATABASE_ID = "150404f6b69e805bbc9fda05fb334aaf"  # Employee Directory Database
+
+def get_employee_id(employee_name):
+    url = f"https://api.notion.com/v1/databases/{EMPLOYEE_DATABASE_ID}/query"
+    headers = {
+        "Authorization": f"Bearer {NOTION_API_KEY}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+    data = {
+        "filter": {
+            "property": "Name",
+            "title": {
+                "equals": employee_name
+            }
+        }
+    }
+    
+    print(f"Sending request to fetch employee ID for {employee_name}...")
+    response = requests.post(url, headers=headers, json=data)
+    
+    if response.status_code == 200:
+        results = response.json().get("results", [])
+        print(f"Fetched employee search results: {results}")
+        if results:
+            employee_id = results[0]['id']
+            print(f"Employee ID found: {employee_id}")
+            return employee_id
+    else:
+        print(f"Error fetching employee ID: {response.status_code}")
+        print(f"Error details: {response.text}")
+    
+    return None
+
+def get_latest_invoice(source_database_id):
+    url = f"https://api.notion.com/v1/databases/{source_database_id}/query"
+    headers = {
+        "Authorization": f"Bearer {NOTION_API_KEY}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+    data = {
+        "filter": {
+            "property": "Status",
+            "select": {
+                "equals": "Payment Processing"
+            }
+        },
+        "sorts": [
+            {
+                "property": "Date Issued",
+                "direction": "descending"
+            }
+        ],
+        "page_size": 1
+    }
+    
+    print(f"Sending request to fetch invoice with 'Payment Processing' status from DB {source_database_id}...")
+    response = requests.post(url, headers=headers, json=data)
+    
+    if response.status_code == 200:
+        results = response.json().get("results", [])
+        print(f"Fetched invoice search results: {results}")
+        if results:
+            invoice_page = results[0]
+            print(f"Fetched invoice: {invoice_page}")
+            return invoice_page
+    else:
+        print(f"Error fetching invoices: {response.status_code}")
+        print(f"Error details: {response.text}")
+    
+    return None
+
+def extract_invoice_fields(invoice_data):
+    props = invoice_data['properties']
+    # The title property in T(CA) Invoices is "Name"
+    name = props.get('Name', {}).get('title', [{}])[0].get('plain_text', 'Untitled')
+    
+    status = props.get('Status', {}).get('select', {}).get('name', '')
+    date_issued = props.get('Date Issued', {}).get('date', {}).get('start', '')
+    date_due = props.get('Date Due', {}).get('date', {}).get('start', '')
+    
+    # Sum is a number in T(CA) Invoices
+    sum_value = props.get('Sum', {}).get('number', 0)
+    
+    # Employer relation
+    employer_relations = props.get('Employer', {}).get('relation', [])
+    employer_id = employer_relations[0]['id'] if employer_relations else ""
+    
+    # Removing formula/rollup fields (Due Status, Service Period, Employee Work Schedule)
+    # since they cannot be directly set in the new page.
+    
+    return {
+        "Name": name,
+        "Status": status,
+        "Date Issued": date_issued,
+        "Date Due": date_due,
+        "Sum": sum_value,           # Will be converted to text in OEV Invoices
+        "Employer ID": employer_id
+    }
+
+def create_invoice(invoice_fields, employee_id, employer_id, target_database_id):
+    url = "https://api.notion.com/v1/pages"
+    headers = {
+        "Authorization": f"Bearer {NOTION_API_KEY}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+
+    # OEV Invoices expects:
+    # - "Name" as title (not "Invoice ID")
+    # - "Status" is a select property
+    # - "Sum" is text in OEV Invoices, so use rich_text
+    # We do not include formula/rollup properties since they can't be set.
+    data = {
+        "parent": {
+            "database_id": target_database_id
+        },
+        "properties": {
+            "Name": {
+                "title": [
+                    {
+                        "text": {
+                            "content": invoice_fields.get('Name', 'Untitled')
+                        }
+                    }
+                ]
+            },
+            "Status": {
+                "select": {
+                    "name": invoice_fields.get('Status', 'Payment Processing')
+                }
+            },
+            "Date Issued": {
+                "date": {
+                    "start": invoice_fields.get('Date Issued', '')
+                }
+            },
+            "Date Due": {
+                "date": {
+                    "start": invoice_fields.get('Date Due', '')
+                }
+            },
+            "Employee": {
+                "relation": [
+                    {
+                        "id": employee_id
+                    }
+                ]
+            },
+            "Employer": {
+                "relation": [
+                    {
+                        "id": employer_id
+                    }
+                ]
+            },
+            # "Sum" in OEV Invoices is a text field, so we store the numeric sum as text
+            "Sum": {
+                "rich_text": [
+                    {
+                        "text": {
+                            "content": str(invoice_fields.get('Sum', ''))
+                        }
+                    }
+                ]
+            }
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        print(f"Invoice '{invoice_fields.get('Name')}' created successfully!")
+    else:
+        print(f"Error creating invoice '{invoice_fields.get('Name')}': {response.text}")
+
+
+# Example usage for Bobby and T(CA) Invoices -> OEV Invoices
+employee_name = "Bobby"
+invoice_page = get_latest_invoice(T_CA_INVOICES_DATABASE_ID)
+
+if invoice_page:
+    invoice_fields = extract_invoice_fields(invoice_page)
+    employee_id = get_employee_id(employee_name)
+    if employee_id:
+        employer_id = invoice_fields.get('Employer ID', "")
+        create_invoice(invoice_fields, employee_id, employer_id, OEV_INVOICES_DATABASE_ID)
+    else:
+        print(f"Employee {employee_name} not found!")
+else:
+    print("No invoice with 'Payment Processing' status found!")

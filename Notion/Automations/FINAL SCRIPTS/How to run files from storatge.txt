@@ -1,0 +1,4 @@
+cd "F:\OEV Workspace\Notion\Automations"
+
+cd "F:\OEV Workspace\Notion\Automations"
+put another slash then python automation_script.py

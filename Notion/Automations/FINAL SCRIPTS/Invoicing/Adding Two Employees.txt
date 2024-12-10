@@ -1,0 +1,43 @@
+# ADD AFTER THE END OF THE initial INVOICE AUT0MATION 
+
+(E.G
+  else:
+        print(f"Employee {employee_name} not found!")
+else:
+    print("No invoice with 'Payment Processing' status found!")
+
+------------------------------------------------------------------------
+
+# Example for another employee "Alice" with a different T(CA) Invoices database
+alice_employee_name = "Alice"
+alice_t_ca_db_id = "251404f6b69e81158d0de23c708168d4"  # Just an example ID
+invoice_page = get_latest_invoice(alice_t_ca_db_id)
+
+if invoice_page:
+    invoice_fields = extract_invoice_fields(invoice_page)
+    alice_employee_id = get_employee_id(alice_employee_name)
+    if alice_employee_id:
+        # Assuming same OEV Invoices database for all
+        employer_id = invoice_fields.get('Employer ID', "")
+        create_invoice(invoice_fields, alice_employee_id, employer_id, OEV_INVOICES_DATABASE_ID)
+    else:
+        print(f"Employee {alice_employee_name} not found!")
+else:
+    print("No invoice with 'Payment Processing' status found for Alice!")
+
+# Example for another employee "James" with a different T(CA) Invoices database
+james_employee_name = "James"
+james_t_ca_db_id = "67830236b69e81158d0de23c708168d4"  # Just an example ID
+invoice_page = get_latest_invoice(james_t_ca_db_id)
+
+if invoice_page:
+    invoice_fields = extract_invoice_fields(invoice_page)
+    james_employee_id = get_employee_id(james_employee_name)
+    if james_employee_id:
+        # Assuming same OEV Invoices database for all
+        employer_id = invoice_fields.get('Employer ID', "")
+        create_invoice(invoice_fields, james_employee_id, employer_id, OEV_INVOICES_DATABASE_ID)
+    else:
+        print(f"Employee {james_employee_name} not found!")
+else:
+    print("No invoice with 'Payment Processing' status found for James!")
