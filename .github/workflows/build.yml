@@ -34,6 +34,11 @@ jobs:
         run: |
           python invoice_automation/invoice_automation.py
 
+      - name: Debug Processed Pages
+        run: |
+          echo "Contents of processed_pages.json before saving:"
+          cat processed_pages.json
+
       - name: Save processed_pages.json
         uses: actions/cache@v3
         with:
