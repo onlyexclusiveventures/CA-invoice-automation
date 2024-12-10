@@ -65,8 +65,8 @@ def get_employee_id(employee_name):
     return None
 
 # Get the latest invoice with 'Payment Processing' status
-def get_latest_invoice():
-    url = f"https://api.notion.com/v1/databases/{T_CA_INVOICES_DATABASE_ID}/query"
+def get_latest_invoice(database_id):
+    url = f"https://api.notion.com/v1/databases/{database_id}/query"
     headers = {
         "Authorization": f"Bearer {NOTION_API_KEY}",
         "Content-Type": "application/json",
@@ -194,9 +194,9 @@ def create_invoice(invoice_fields, employee_id, employer_id):
     else:
         print(f"Error creating invoice '{invoice_fields.get('Name')}': {response.text}")
 
-# Example usage
+# Example usage for general invoices
 employee_name = "Bobby"
-invoice_page = get_latest_invoice()
+invoice_page = get_latest_invoice(T_CA_INVOICES_DATABASE_ID)
 
 if invoice_page:
     invoice_fields = extract_invoice_fields(invoice_page)
@@ -209,7 +209,7 @@ if invoice_page:
 else:
     print("No invoice with 'Payment Processing' status found!")
 
-# for Bobby
+# Example usage for Bobby's specific database
 bobby_employee_name = "Bobby"
 bobby_t_ca_db_id = "158404f6b69e81e984a9e2ddda3b69e1"  # Bobby's Invoice DB ID
 invoice_page = get_latest_invoice(bobby_t_ca_db_id)
