@@ -5,7 +5,7 @@ import os
 # Notion API setup
 NOTION_API_KEY = "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"  # Your Notion API key
 T_CA_INVOICES_DATABASE_ID = "151404f6b69e81158d0de23c708168d4"  # (t) (CA) Invoices Database ID
-OEV_INVOICES_DATABASE_ID = "155404f6-b69e-80f7-a0a5-db58eda0c82a"  # OEV Invoices Database ID (corrected UUID format)
+OEV_INVOICES_DATABASE_ID = "155404f6-b69e-80f7-a0a5-db58eda0c82a"  # OEV Invoices Database ID
 EMPLOYEE_DATABASE_ID = "150404f6b69e805bbc9fda05fb334aaf"  # Employee Directory Database ID
 
 # File to store processed page IDs
@@ -14,7 +14,7 @@ PROCESSED_PAGES_FILE = "processed_pages.json"
 # Load processed page IDs
 def load_processed_pages():
     if os.path.exists(PROCESSED_PAGES_FILE):
-        with open(PROCESSED_PAGES_FILE, "r") as file:
+        with open(PROCESSED_PAGES_FILE, "r", encoding="utf-8") as file:
             return json.load(file)
     return []
 
@@ -23,8 +23,8 @@ def save_processed_page(page_id):
     processed_pages = load_processed_pages()
     if page_id not in processed_pages:
         processed_pages.append(page_id)
-        with open(PROCESSED_PAGES_FILE, "w") as file:
-            json.dump(processed_pages, file)
+        with open(PROCESSED_PAGES_FILE, "w", encoding="utf-8") as file:
+            json.dump(processed_pages, file, indent=4)
 
 # Get employee ID by employee name
 def get_employee_id(employee_name):

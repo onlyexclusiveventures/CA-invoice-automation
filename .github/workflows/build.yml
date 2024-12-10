@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: processed_pages.json
-          key: processed-pages-cache
+          key: processed-pages-cache-${{ github.run_id }}
 
       - name: Install Dependencies
         run: |
@@ -35,7 +35,7 @@ jobs:
           python invoice_automation/invoice_automation.py
 
       - name: Save processed_pages.json
-        uses: actions/cache/save@v3
+        uses: actions/cache@v3
         with:
           path: processed_pages.json
-          key: processed-pages-cache
+          key: processed-pages-cache-${{ github.run_id }}
