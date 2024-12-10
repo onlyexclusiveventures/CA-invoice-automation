@@ -24,6 +24,7 @@ def load_processed_pages():
 # Save a processed page ID
 def save_processed_page(page_id):
     processed_pages = load_processed_pages()
+    print(f"Current processed pages: {processed_pages}")
     if page_id not in processed_pages:
         processed_pages.append(page_id)
         with open(PROCESSED_PAGES_FILE, "w", encoding="utf-8") as file:
