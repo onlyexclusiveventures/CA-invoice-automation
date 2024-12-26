@@ -4,7 +4,6 @@ import os
 
 # Notion API setup
 NOTION_API_KEY = "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"  # Your Notion API key
-T_CA_INVOICES_DATABASE_ID = "151404f6b69e81158d0de23c708168d4"  # (t) (CA) Invoices Database ID
 OEV_INVOICES_DATABASE_ID = "155404f6-b69e-80f7-a0a5-db58eda0c82a"  # OEV Invoices Database ID
 EMPLOYEE_DATABASE_ID = "150404f6b69e805bbc9fda05fb334aaf"  # Employee Directory Database ID
 
@@ -194,49 +193,22 @@ def create_invoice(invoice_fields, employee_id, employer_id):
     else:
         print(f"Error creating invoice '{invoice_fields.get('Name')}': {response.text}")
 
-# Example usage for general invoices
-employee_name = "Bobby Chizom"
-invoice_page = get_latest_invoice(T_CA_INVOICES_DATABASE_ID)
+# Dynamic configuration for employees and their database IDs
+employee_databases = {
+    "Bobby Chizom": "158404f6b69e81e984a9e2ddda3b69e1",
+    "Loice Furechi": "168404f6b69e80c580cedd8abe9193fa"
+}
 
-if invoice_page:
-    invoice_fields = extract_invoice_fields(invoice_page)
-    employee_id = get_employee_id(employee_name)
-    if employee_id:
-        employer_id = invoice_fields.get('Employer ID', "")
-        create_invoice(invoice_fields, employee_id, employer_id)
+# Process invoices for each employee dynamically
+for employee_name, database_id in employee_databases.items():
+    invoice_page = get_latest_invoice(database_id)
+    if invoice_page:
+        invoice_fields = extract_invoice_fields(invoice_page)
+        employee_id = get_employee_id(employee_name)
+        if employee_id:
+            employer_id = invoice_fields.get('Employer ID', "")
+            create_invoice(invoice_fields, employee_id, employer_id)
+        else:
+            print(f"Employee {employee_name} not found!")
     else:
-        print(f"Employee {employee_name} not found!")
-else:
-    print("No invoice with 'Payment Processing' status found!")
-
-# Example usage for Bobby's specific database
-bobby_employee_name = "Bobby Chizom"
-bobby_t_ca_db_id = "158404f6b69e81e984a9e2ddda3b69e1"  # Bobby's Invoice DB ID
-invoice_page = get_latest_invoice(bobby_t_ca_db_id)
-
-if invoice_page:
-    invoice_fields = extract_invoice_fields(invoice_page)
-    bobby_employee_id = get_employee_id(bobby_employee_name)
-    if bobby_employee_id:
-        employer_id = invoice_fields.get('Employer ID', "")
-        create_invoice(invoice_fields, bobby_employee_id, employer_id)
-    else:
-        print(f"Employee {bobby_employee_name} not found!")
-else:
-    print("No invoice with 'Payment Processing' status found for Bobby!")
-
-# Example for Loice
-loice_employee_name = "Loice Furechi"
-loice_t_ca_db_id = "168404f6b69e80c580cedd8abe9193fa"  # Loice's Invoice DB ID
-invoice_page = get_latest_invoice(loice_t_ca_db_id)
-
-if invoice_page:
-    invoice_fields = extract_invoice_fields(invoice_page)
-    loice_employee_id = get_employee_id(bobby_employee_name)
-    if loice_employee_id:
-        employer_id = invoice_fields.get('Employer ID', "")
-        create_invoice(invoice_fields, loice_employee_id, employer_id)
-    else:
-        print(f"Employee {loice_employee_name} not found!")
-else:
-    print("No invoice with 'Payment Processing' status found for Loice!")
+        print(f"No invoice with 'Payment Processing' status found for {employee_name}!")
