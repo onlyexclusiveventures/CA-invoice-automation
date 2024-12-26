@@ -196,7 +196,7 @@ def create_invoice(invoice_fields, employee_id, employer_id):
 # Dynamic configuration for employees and their database IDs
 employee_databases = {
     "Bobby Chizom": "158404f6b69e81e984a9e2ddda3b69e1",
-    "Loice Furechi": "168404f6b69e80c580cedd8abe9193fa"
+    "Loice Furechi": "168404f6b69e8167a6cdf56ab5f10b38"
 }
 
 # Process invoices for each employee dynamically
