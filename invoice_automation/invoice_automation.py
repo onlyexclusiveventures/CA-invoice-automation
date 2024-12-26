@@ -195,7 +195,7 @@ def create_invoice(invoice_fields, employee_id, employer_id):
         print(f"Error creating invoice '{invoice_fields.get('Name')}': {response.text}")
 
 # Example usage for general invoices
-employee_name = "Bobby"
+employee_name = "Bobby Chizom"
 invoice_page = get_latest_invoice(T_CA_INVOICES_DATABASE_ID)
 
 if invoice_page:
@@ -210,7 +210,7 @@ else:
     print("No invoice with 'Payment Processing' status found!")
 
 # Example usage for Bobby's specific database
-bobby_employee_name = "Bobby"
+bobby_employee_name = "Bobby Chizom"
 bobby_t_ca_db_id = "158404f6b69e81e984a9e2ddda3b69e1"  # Bobby's Invoice DB ID
 invoice_page = get_latest_invoice(bobby_t_ca_db_id)
 
@@ -224,3 +224,19 @@ if invoice_page:
         print(f"Employee {bobby_employee_name} not found!")
 else:
     print("No invoice with 'Payment Processing' status found for Bobby!")
+
+# Example for Loice
+loice_employee_name = "Loice Furechi"
+loice_t_ca_db_id = "168404f6b69e80c580cedd8abe9193fa"  # Loice's Invoice DB ID
+invoice_page = get_latest_invoice(loice_t_ca_db_id)
+
+if invoice_page:
+    invoice_fields = extract_invoice_fields(invoice_page)
+    loice_employee_id = get_employee_id(bobby_employee_name)
+    if loice_employee_id:
+        employer_id = invoice_fields.get('Employer ID', "")
+        create_invoice(invoice_fields, loice_employee_id, employer_id)
+    else:
+        print(f"Employee {loice_employee_name} not found!")
+else:
+    print("No invoice with 'Payment Processing' status found for Loice!")
